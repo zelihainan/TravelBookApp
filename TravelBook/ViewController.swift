@@ -16,6 +16,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     var titleArray = [String]()
     var idArray = [UUID]()
     
+    var chosenTitle = ""
+    var chosenId: UUID?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -29,7 +32,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        NotificationCenter.default.addObserver(self, selector: #selector(getData), name: NSNotification.Name("newPlace"), object: nil)
+    }
+    
     @objc func addButtonClicked() {
+        chosenTitle = ""
         performSegue(withIdentifier: "toDetailsVC", sender: nil)
     }
     
@@ -54,8 +62,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     if let id = result.value(forKey: "id") as? UUID {
                         idArray.append(id)
                     }
-                    tableView.reloadData()
                 }
+                tableView.reloadData()
             }
 
         } catch  {
@@ -65,6 +73,19 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        chosenTitle = titleArray[indexPath.row]
+        chosenId = idArray[indexPath.row]
+        performSegue(withIdentifier: "toDetailsVC", sender: nil)
+            
+    }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "toDetailsVC" {
+            let destinationVC = segue.destination as! DetailsVC
+            destinationVC.selectedTitle = chosenTitle
+            destinationVC.selectedTitleID = chosenId
+        }
+    }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return titleArray.count
